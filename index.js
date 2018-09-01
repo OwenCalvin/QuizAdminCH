@@ -1,6 +1,9 @@
 const pupp = require('puppeteer')
 const questions = require('./data/questions')
 
+const name = '4INF-HP-M'
+const delay = 0
+
 const main = async () => {
   const browser = await pupp.launch({headless: false})
   const quizPage = await browser.newPage()
@@ -8,9 +11,10 @@ const main = async () => {
   
   // Select the game frame
   const quizFrame = quizPage.frames()[1]
+  await quizFrame.waitForSelector('.startquiz')
   await quizFrame.click('.startquiz')
-  await quizPage.waitFor(750)
-  await quizFrame.type('#registerunverifiedparticipantform-username', '4INF-HP-M', {delay: 5})
+  await quizFrame.waitForSelector('#RegisterUnverifiedParticipantForm')
+  await quizFrame.type('#registerunverifiedparticipantform-username', name, {delay: 5})
   
   // JQuery Error => click two times with a delay
   await quizFrame.click('#RegisterUnverifiedParticipantForm button')
@@ -18,7 +22,7 @@ const main = async () => {
   await quizFrame.click('#RegisterUnverifiedParticipantForm button')
 
   // Quizz begin
-  await quizPage.waitFor(6900)
+  await quizFrame.waitForSelector('.answers')
 
   const yeah = async () => {
     let question = await quizFrame.evaluate(() => document.querySelector('#questioncontainer fieldset header h1').textContent)
@@ -34,6 +38,9 @@ const main = async () => {
 
   while (true) {
     await yeah()
+    if (delay) {
+      await quizPage.waitFor(delay)
+    }
   }
 
   // await browser.close()
